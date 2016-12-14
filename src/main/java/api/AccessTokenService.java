@@ -1,5 +1,6 @@
 package api;
 
+import exception.FnExpressErrorException;
 import model.AccessToken;
 
 /**
@@ -7,6 +8,6 @@ import model.AccessToken;
  */
 public interface AccessTokenService {
 
-    AccessToken getAccessToken();
+    AccessToken getAccessToken() throws FnExpressErrorException;
 
 }

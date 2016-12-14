@@ -9,23 +9,23 @@ import com.alibaba.fastjson.JSONObject;
 import com.alibaba.fastjson.util.TypeUtils;
 import exception.FnExpressError;
 import exception.FnExpressErrorException;
-import org.apache.commons.codec.digest.DigestUtils;
-import org.apache.http.HttpEntity;
 import org.apache.http.HttpHost;
 import org.apache.http.NameValuePair;
 import org.apache.http.client.config.RequestConfig;
-import org.apache.http.client.entity.UrlEncodedFormEntity;
 import org.apache.http.client.methods.*;
 import org.apache.http.client.utils.URLEncodedUtils;
-import org.apache.http.entity.ContentType;
-import org.apache.http.entity.mime.MultipartEntityBuilder;
-import org.apache.http.entity.mime.content.ByteArrayBody;
+import org.apache.http.entity.StringEntity;
 import org.apache.http.impl.client.BasicResponseHandler;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.message.BasicNameValuePair;
+import utils.FnExpressUtils;
+import utils.HttpDeleteWithBody;
 
 import java.io.IOException;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 public class BaseServiceImpl {
 
@@ -35,6 +35,7 @@ public class BaseServiceImpl {
     public static final String DATA = "data";
     public static final String HTTP_METHOD_GET = "GET";
     public static final String HTTP_METHOD_POST = "POST";
+    public static final String HTTP_METHOD_DELETE = "DELETE";
     protected FnExpressConfigStorage configStorage;
     protected HttpHost httpProxy;
     protected CloseableHttpClient httpClient;
@@ -43,7 +44,16 @@ public class BaseServiceImpl {
     protected boolean isTest;
 
     public BaseServiceImpl(FnExpressConfigStorage configStorage, CloseableHttpClient httpClient,
-                           HttpHost httpProxy, LogListener logListener, AccessTokenListener accessTokenListener, boolean isTest) {
+                           HttpHost httpProxy, LogListener logListener, boolean isTest) {
+        this.configStorage = configStorage;
+        this.httpClient = httpClient;
+        this.httpProxy = httpProxy;
+        this.logListener = logListener;
+        this.isTest = isTest;
+    }
+
+    public BaseServiceImpl(FnExpressConfigStorage configStorage, CloseableHttpClient httpClient, HttpHost httpProxy,
+                           LogListener logListener, AccessTokenListener accessTokenListener, boolean isTest) {
         this.configStorage = configStorage;
         this.httpClient = httpClient;
         this.httpProxy = httpProxy;
@@ -62,32 +72,6 @@ public class BaseServiceImpl {
         return isTest ? TEST_API_URL : API_URL;
     }
 
-    protected String createApiSignature(String url, Map params, int timestamp) {
-        Map<String, Object> signMap = new HashMap<String, Object>(params);
-        List<String> list = new ArrayList<String>(signMap.keySet());
-        Collections.sort(list);
-        StringBuilder stringBuilder = new StringBuilder(url);
-        stringBuilder.append("?");
-        for (int i = 0; i < list.size(); i++) {
-            Object value = signMap.get(list.get(i));
-            if (value instanceof byte[]) {
-                continue;
-            }
-            if (value != null) {
-                stringBuilder.append(list.get(i)).append("=").append(value.toString());
-                if (i < list.size() - 1) {
-                    stringBuilder.append("&");
-                }
-            }
-        }
-        stringBuilder.append(configStorage.getSecret());
-        return DigestUtils.md5Hex(stringBuilder.toString());
-    }
-
-    protected JSONObject doGet(String url) throws FnExpressErrorException {
-        return doGet(url, null);
-    }
-
     protected JSONObject doGet(String url, Object params) throws FnExpressErrorException {
         try {
             return getResponseJsonObject(HTTP_METHOD_GET, url, params);
@@ -96,9 +80,6 @@ public class BaseServiceImpl {
         }
     }
 
-    protected JSONObject doPost(String url) throws FnExpressErrorException {
-        return doPost(url, null);
-    }
 
     protected JSONObject doPost(String url, Object params) throws FnExpressErrorException {
         try {
@@ -108,22 +89,35 @@ public class BaseServiceImpl {
         }
     }
 
+    protected JSONObject doDelete(String url, Object params) throws FnExpressErrorException {
+        try {
+            return getResponseJsonObject(HTTP_METHOD_DELETE, url, params);
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
     private JSONObject getResponseJsonObject(String httpMethod, String url, Object params) throws IOException, FnExpressErrorException {
 
         HttpUriRequest httpUriRequest = null;
         String fullUrl = getBaseApiUrl() + url;
-        List<NameValuePair> sysNameValuePairs = getSysNameValuePairs(fullUrl, params);
-        List<NameValuePair> nameValuePairs = getNameValuePairs(params);
         if (HTTP_METHOD_GET.equals(httpMethod)) {
-            sysNameValuePairs.addAll(nameValuePairs);
-            HttpGet httpGet = new HttpGet(fullUrl + "?" + URLEncodedUtils.format(sysNameValuePairs, UTF_8));
+            List<NameValuePair> nameValuePairs = getNameValuePairs(params);
+            HttpGet httpGet = new HttpGet(fullUrl + "?" + URLEncodedUtils.format(nameValuePairs, UTF_8));
             setRequestConfig(httpGet);
             httpUriRequest = httpGet;
         } else if (HTTP_METHOD_POST.equals(httpMethod)) {
-            HttpPost httpPost = new HttpPost(fullUrl + "?" + URLEncodedUtils.format(sysNameValuePairs, UTF_8));
-            httpPost.setEntity(new UrlEncodedFormEntity(nameValuePairs, UTF_8));
+            HttpPost httpPost = new HttpPost(fullUrl);
+            httpPost.setEntity(new StringEntity(JSON.toJSONString(FnExpressUtils.buildRequestBody(configStorage.getAppId(),
+                    accessTokenListener.getAccessToken(), params))));
             setRequestConfig(httpPost);
             httpUriRequest = httpPost;
+        } else if (HTTP_METHOD_DELETE.equals(httpMethod)) {
+            HttpDeleteWithBody httpDelete = new HttpDeleteWithBody(fullUrl);
+            httpDelete.setEntity(new StringEntity(JSON.toJSONString(FnExpressUtils.buildRequestBody(configStorage.getAppId(),
+                    accessTokenListener.getAccessToken(), params))));
+            setRequestConfig(httpDelete);
+            httpUriRequest = httpDelete;
         }
 
         CloseableHttpResponse response = this.httpClient.execute(httpUriRequest);
@@ -136,60 +130,6 @@ public class BaseServiceImpl {
         }
         logging(url, httpMethod, true, httpUriRequest.getURI() + "\nBody:" + JSON.toJSONString(params), resultContent);
         return jsonObject;
-    }
-
-    protected JSONObject doPost(String url, Object params, String imageName, byte[] fileData) throws FnExpressErrorException {
-        try {
-            return getResponseJsonObject(HTTP_METHOD_POST, url, params, imageName, fileData);
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        }
-    }
-
-    private JSONObject getResponseJsonObject(String httpMethod, String url, Object params, String imageName, byte[] fileData) throws IOException, FnExpressErrorException {
-
-        String fullUrl = getBaseApiUrl() + url;
-
-        List<NameValuePair> sysNameValuePairs = getSysNameValuePairs(fullUrl, params);
-        List<NameValuePair> nameValuePairs = getNameValuePairs(params);
-        HttpPost httpPost = new HttpPost(fullUrl + "?" + URLEncodedUtils.format(sysNameValuePairs, UTF_8));
-
-        MultipartEntityBuilder builder = MultipartEntityBuilder.create();
-        for (NameValuePair p : nameValuePairs) {
-            builder.addTextBody(p.getName(), p.getValue(), ContentType.TEXT_PLAIN.withCharset(UTF_8));
-        }
-
-        builder.addPart("img_data", new ByteArrayBody(fileData, imageName));
-
-        final HttpEntity entity = builder.build();
-        httpPost.addHeader(entity.getContentType());
-        httpPost.setEntity(entity);
-
-
-        CloseableHttpResponse response = this.httpClient.execute(httpPost);
-        String resultContent = new BasicResponseHandler().handleResponse(response);
-        JSONObject jsonObject = JSON.parseObject(resultContent);
-        FnExpressError error = FnExpressError.fromJson(jsonObject);
-        if (error != null) {
-            logging(url, httpMethod, false, httpPost.getURI() + "\nBody:" + JSON.toJSONString(params), resultContent);
-            throw new FnExpressErrorException(error.getErrorCode(), error.getErrorMsg());
-        }
-        logging(url, httpMethod, true, httpPost.getURI() + "\nBody:" + JSON.toJSONString(params), resultContent);
-        return jsonObject;
-    }
-
-    private List<NameValuePair> getSysNameValuePairs(String url, Object params){
-        Map<String, String> beanMap = params != null ? getParamsMap(params) : new HashMap<>();
-        int timestamp =(int) (System.currentTimeMillis() / 1000);
-        beanMap.put("app_id", configStorage.getAppId());
-        beanMap.put("timestamp", String.valueOf(timestamp));
-        beanMap.put("sig", createApiSignature(url, beanMap, timestamp));
-
-        List<NameValuePair> nameValuePairs = new ArrayList<>();
-        nameValuePairs.add(new BasicNameValuePair("app_id", beanMap.get("app_id")));
-        nameValuePairs.add(new BasicNameValuePair("timestamp", beanMap.get("timestamp")));
-        nameValuePairs.add(new BasicNameValuePair("sig", beanMap.get("sig")));
-        return nameValuePairs;
     }
 
     private List<NameValuePair> getNameValuePairs(Object params) {

@@ -5,10 +5,6 @@ package api;
  */
 public interface AccessTokenListener {
 
-    void save();
-
-    Boolean isExpire();
-
     String getAccessToken();
 
 }

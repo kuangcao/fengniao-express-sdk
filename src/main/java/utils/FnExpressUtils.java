@@ -14,7 +14,7 @@ import java.util.*;
  */
 public class FnExpressUtils {
 
-    public RequestBody buidlRequestBody(String appId, String accessToken, Object data){
+    public static RequestBody buildRequestBody(String appId, String accessToken, Object data){
         RequestBody requestBody = new RequestBody();
         requestBody.setAppId(appId);
         requestBody.setData(data);
@@ -23,7 +23,7 @@ public class FnExpressUtils {
         return requestBody;
     }
 
-    public String createAccessTokenSignature(String appId, String secret_key, Integer salt){
+    public static String createAccessTokenSignature(String appId, String secret_key, Integer salt){
 
         Map<String, String> params = new LinkedHashMap<>(3);
         params.put("app_id", appId);
@@ -33,7 +33,7 @@ public class FnExpressUtils {
         return DigestUtils.md5Hex(urlEncode(StringUtils.join(paramsList, "&")));
     }
 
-    public String createApiSignature(String appId, String accessToken, Object data, Integer salt){
+    public static String createApiSignature(String appId, String accessToken, Object data, Integer salt){
 
         Map<String, String> params = new LinkedHashMap<>(3);
         params.put("app_id", appId);
@@ -44,7 +44,7 @@ public class FnExpressUtils {
         return DigestUtils.md5Hex(StringUtils.join(paramsList, "&"));
     }
 
-    public Integer getSalt(){
+    public static Integer getSalt(){
         return new Random().nextInt(9999-1000+1)+1000;//为变量赋随机值1000-9999
     }
 

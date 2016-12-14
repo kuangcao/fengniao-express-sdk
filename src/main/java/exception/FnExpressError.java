@@ -13,8 +13,7 @@ public class FnExpressError implements Serializable {
     private String json;
 
     public static FnExpressError fromJson(JSONObject jsonObject) {
-        String data = jsonObject.getString("data");
-        if ("ng".equals(data)) {
+        if (jsonObject.getIntValue("code") != 200) {
             FnExpressError error = new FnExpressError();
             JSONObject jsonError = jsonObject.getJSONObject("error");
             error.setErrorCode(jsonError.getIntValue("code"));

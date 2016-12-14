@@ -7,14 +7,42 @@ import java.io.Serializable;
  */
 public class ResultMessage implements Serializable {
 
+    private Integer code;
+
+    private String msg;
+
     private String data;
 
-    public ResultMessage(String data)  {
-        this.data = data;
+    public static ResultMessage buildOk() {
+        ResultMessage resultMessage = new ResultMessage();
+        resultMessage.setCode(200);
+        resultMessage.setMsg("success");
+        resultMessage.setData("");
+        return resultMessage;
     }
 
-    public static ResultMessage buildOk() {
-        return new ResultMessage("ok");
+    public static ResultMessage buildError(String errorMsg) {
+        ResultMessage resultMessage = new ResultMessage();
+        resultMessage.setCode(-1);
+        resultMessage.setMsg(errorMsg == null ? "error" : errorMsg);
+        resultMessage.setData("");
+        return resultMessage;
+    }
+
+    public Integer getCode() {
+        return code;
+    }
+
+    public void setCode(Integer code) {
+        this.code = code;
+    }
+
+    public String getMsg() {
+        return msg;
+    }
+
+    public void setMsg(String msg) {
+        this.msg = msg;
     }
 
     public String getData() {
@@ -28,7 +56,9 @@ public class ResultMessage implements Serializable {
     @Override
     public String toString() {
         return "ResultMessage{" +
-                "data='" + data + '\'' +
+                "code=" + code +
+                ", msg='" + msg + '\'' +
+                ", data='" + data + '\'' +
                 '}';
     }
 }

@@ -39,6 +39,7 @@ public class FnExpressClientImpl implements FnExpressClient {
         this.configStorage = configStorage;
     }
 
+    @Override
     public void setConfigStorage(FnExpressConfigStorage configStorage) {
 
         this.configStorage = configStorage;
@@ -88,7 +89,7 @@ public class FnExpressClientImpl implements FnExpressClient {
     @Override
     public ResultMessage pushHandle(String url, Map<String, String> params, String pushAction) {
         if (this.pushConsumer == null) {
-            return new ResultMessage("pushConsumer does not implement");
+            return ResultMessage.buildError("pushConsumer does not implement");
         }
         return ResultMessage.buildOk();
     }
@@ -100,19 +101,20 @@ public class FnExpressClientImpl implements FnExpressClient {
     }
 
     @Override
+    public AccessTokenService getAccessTokenService() {
+
+        if (accessTokenService == null) {
+            accessTokenService = new AccessTokenServiceImpl(configStorage, httpClient, httpProxy, logListener, isTest);
+        }
+        return accessTokenService;
+    }
+
+    @Override
     public OrderService getOrderService() {
         if (orderService == null) {
             orderService = new OrderServiceImpl(configStorage, httpClient, httpProxy, logListener, accessTokenListener, isTest);
         }
         return orderService;
-    }
-
-    @Override
-    public AccessTokenService getAccessTokenService() {
-        if (accessTokenService == null) {
-            accessTokenService = new AccessTokenServiceImpl(configStorage, httpClient, httpProxy, logListener, accessTokenListener,  isTest);
-        }
-        return accessTokenService;
     }
 
 }
