@@ -1,11 +1,12 @@
 package utils;
 
+import com.alibaba.fastjson.JSON;
+import model.RequestBody;
 import org.apache.commons.codec.digest.DigestUtils;
 import org.apache.commons.lang.StringUtils;
 
-import java.io.Serializable;
 import java.io.UnsupportedEncodingException;
-import java.net.URLDecoder;
+import java.net.URLEncoder;
 import java.util.*;
 
 /**
@@ -13,123 +14,74 @@ import java.util.*;
  */
 public class FnExpressUtils {
 
-    public static void sigCheck(String url, Map<String, String> params, String appId, String secret) {
-        SigPart sigPart = getSigPart(url, params);
-        if (sigPart.getSig() == null) {
-            throw new RuntimeException("sig is required");
-        }
-        Map<String, String> signParams = sigPart.getSignRelationParams();
-        if (!signParams.containsKey("timestamp")) {
-            throw new RuntimeException("timestamp is required");
-        }
-        if (!signParams.containsKey("app_id")) {
-            throw new RuntimeException("app_id is required");
-        }
-        if (!appId.equals(signParams.get("app_id"))) {
-            throw new RuntimeException("app_id is incorrect");
-        }
+    public RequestBody buidlRequestBody(String appId, String accessToken, Object data){
+        RequestBody requestBody = new RequestBody();
+        requestBody.setAppId(appId);
+        requestBody.setData(data);
+        requestBody.setSalt(getSalt());
+        requestBody.setSignature(createApiSignature(appId, accessToken, data, requestBody.getSalt()));
+        return requestBody;
+    }
 
-        List<String> sortParams = getSortParams(signParams);
+    public String createAccessTokenSignature(String appId, String secret_key, Integer salt){
 
-        String signature = DigestUtils.md5Hex(sigPart.getUrl() + "?" + StringUtils.join(sortParams, "&") + secret);
+        Map<String, String> params = new LinkedHashMap<>(3);
+        params.put("app_id", appId);
+        params.put("salt", String.valueOf(salt));
+        params.put("secret_key", secret_key);
+        List<String> paramsList = getParams(params);
+        return DigestUtils.md5Hex(urlEncode(StringUtils.join(paramsList, "&")));
+    }
 
-        if (!signature.equals(sigPart.getSig())) {
-            throw new RuntimeException("sig is incorrect");
+    public String createApiSignature(String appId, String accessToken, Object data, Integer salt){
+
+        Map<String, String> params = new LinkedHashMap<>(3);
+        params.put("app_id", appId);
+        params.put("access_token", accessToken);
+        params.put("data", urlEncode(JSON.toJSONString(data)));
+        params.put("salt", String.valueOf(salt));
+        List<String> paramsList = getParams(params);
+        return DigestUtils.md5Hex(StringUtils.join(paramsList, "&"));
+    }
+
+    public Integer getSalt(){
+        return new Random().nextInt(9999-1000+1)+1000;//为变量赋随机值1000-9999
+    }
+
+    public static String urlEncode(String str) {
+        try {
+            return URLEncoder.encode(str, "UTF-8");
+        } catch (UnsupportedEncodingException e) {
+            throw new RuntimeException(e);
         }
     }
 
-    public static List<String> getSortParams(Map<String, String> signParams) {
+    public static List<String> getParams(Map<String, String> signParams) {
         List<String> params = new ArrayList<>();
         for(Map.Entry entry: signParams.entrySet()){
-                String param = entry.getKey() + "=" + entry.getValue();
-                params.add(param);
+            String param = entry.getKey() + "=" + entry.getValue();
+            params.add(param);
         }
-        Collections.sort(params);
         return params;
     }
 
-    public static Map<String, String> urlDecodeParams(Map<String, String> params) {
-        Map<String, String> paramsTemp = new HashMap<>();
-        for(Map.Entry entry: params.entrySet()){
-            try {
-                paramsTemp.put(String.valueOf(entry.getKey()), URLDecoder.decode(String.valueOf(entry.getValue()), "utf-8"));
-            } catch (UnsupportedEncodingException e){
-                throw new RuntimeException("data decode incorrect");
-            }
-        }
-        return paramsTemp;
-    }
-
-    private static SigPart getSigPart(String url, Map<String, String> params) {
-        if (!url.contains("?")) {
-            Map<String, String> signParams = new HashMap<>();
-            signParams.putAll(params);
-            String sig = signParams.remove("sig");
-            SigPart sigPart = new SigPart();
-            sigPart.setSig(sig);
-            sigPart.setSignRelationParams(signParams);
-            sigPart.setUrl(url);
-            return sigPart;
-        }
-        String noQueryUrl = url.substring(0, url.indexOf("?"));
-        String queryString = url.substring(url.indexOf("?") + 1, url.length());
-        Map<String, String> signParams = new HashMap<>();
-        String sig = null;
-        List<String> queryParts = Arrays.asList(StringUtils.split(queryString, "&"));
-        for (String queryPart : queryParts) {
-            String[] kv = queryPart.split("=");
-            if ("sig".equals(kv[0])) {
-                sig = kv[1];
-            } else {
-                signParams.put(kv[0], kv[1]);
-            }
-        }
-        signParams.putAll(params);
-        SigPart sigPart = new SigPart();
-        sigPart.setSig(sig);
-        sigPart.setSignRelationParams(signParams);
-        sigPart.setUrl(noQueryUrl);
-        return sigPart;
+    public static void sigCheck(String url, Map<String, String> params, String appId, String secret) {
+//        if (!signParams.containsKey("app_id")) {
+//            throw new RuntimeException("app_id is required");
+//        }
+//        if (!appId.equals(signParams.get("app_id"))) {
+//            throw new RuntimeException("app_id is incorrect");
+//        }
+//
+//        List<String> sortParams = getSortParams(signParams);
+//
+//        String signature = DigestUtils.md5Hex(sigPart.getUrl() + "?" + StringUtils.join(sortParams, "&") + secret);
+//
+//        if (!signature.equals(sigPart.getSig())) {
+//            throw new RuntimeException("sig is incorrect");
+//        }
     }
 
 
-    public static class SigPart implements Serializable {
-        Map<String, String> signRelationParams;
-        String sig;
-        String url;
-
-        public Map<String, String> getSignRelationParams() {
-            return signRelationParams;
-        }
-
-        public void setSignRelationParams(Map<String, String> signRelationParams) {
-            this.signRelationParams = signRelationParams;
-        }
-
-        public String getSig() {
-            return sig;
-        }
-
-        public void setSig(String sig) {
-            this.sig = sig;
-        }
-
-        public String getUrl() {
-            return url;
-        }
-
-        public void setUrl(String url) {
-            this.url = url;
-        }
-
-        @Override
-        public String toString() {
-            return "SigPart{" +
-                    "signRelationParams=" + signRelationParams +
-                    ", sig='" + sig + '\'' +
-                    ", url='" + url + '\'' +
-                    '}';
-        }
-    }
 
 }

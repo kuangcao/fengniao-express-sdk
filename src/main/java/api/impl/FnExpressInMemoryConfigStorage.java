@@ -1,8 +1,8 @@
 package api.impl;
 
-import com.jiabangou.mtwmsdk.api.MtWmConfigStorage;
+import api.FnExpressConfigStorage;
 
-public class FnExpressInMemoryConfigStorage implements MtWmConfigStorage {
+public class FnExpressInMemoryConfigStorage implements FnExpressConfigStorage {
 
     protected volatile String appId;
     protected volatile String secret;

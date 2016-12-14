@@ -1,5 +1,6 @@
 package api.impl;
 
+import api.AccessTokenListener;
 import api.FnExpressConfigStorage;
 import api.LogListener;
 import com.alibaba.fastjson.JSON;
@@ -38,14 +39,16 @@ public class BaseServiceImpl {
     protected HttpHost httpProxy;
     protected CloseableHttpClient httpClient;
     protected LogListener logListener;
+    protected AccessTokenListener accessTokenListener;
     protected boolean isTest;
 
     public BaseServiceImpl(FnExpressConfigStorage configStorage, CloseableHttpClient httpClient,
-                           HttpHost httpProxy, LogListener logListener, boolean isTest) {
+                           HttpHost httpProxy, LogListener logListener, AccessTokenListener accessTokenListener, boolean isTest) {
         this.configStorage = configStorage;
         this.httpClient = httpClient;
         this.httpProxy = httpProxy;
         this.logListener = logListener;
+        this.accessTokenListener = accessTokenListener;
         this.isTest = isTest;
     }
 
