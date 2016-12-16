@@ -13,11 +13,11 @@ public class FnExpressError implements Serializable {
     private String json;
 
     public static FnExpressError fromJson(JSONObject jsonObject) {
-        if (jsonObject.getIntValue("code") != 200) {
+        if (jsonObject.getString("code").equals("") || jsonObject.getIntValue("code") != 200) {
             FnExpressError error = new FnExpressError();
             JSONObject jsonError = jsonObject.getJSONObject("error");
-            error.setErrorCode(jsonError.getIntValue("code"));
-            error.setErrorMsg(jsonError.getString("msg"));
+            error.setErrorCode(jsonObject.getString("code").equals("") ? -1 : jsonObject.getIntValue("code"));
+            error.setErrorMsg(jsonObject.getString("msg"));
             error.setJson(jsonObject.toJSONString());
             return error;
         }

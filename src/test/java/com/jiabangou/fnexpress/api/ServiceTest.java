@@ -1,6 +1,5 @@
 package com.jiabangou.fnexpress.api;
 
-import com.alibaba.fastjson.JSON;
 import com.jiabangou.fnexpresssdk.api.AccessTokenListener;
 import com.jiabangou.fnexpresssdk.api.FnExpressClient;
 import com.jiabangou.fnexpresssdk.api.PushConsumer;
@@ -19,33 +18,28 @@ public class ServiceTest {
     @BeforeClass
     public static void BeforeClass() {
         FnExpressInMemoryConfigStorage configStorage = new FnExpressInMemoryConfigStorage();
-        configStorage.setAppId("406");
-        configStorage.setSecret("a2f9073a17c35331d9269fd8bbbcbcae");
+        configStorage.setAppId("0471b12c-c761-4610-9142-9a36ee9e860d");
+        configStorage.setSecret("8e7398ae-6025-4cf9-bd3c-5a03942cecc6");
         expressClient = new FnExpressClientImpl();
         expressClient.setConfigStorage(configStorage);
         expressClient.setIsTest(false);
         expressClient.setPushConsumer(new PushConsumer() {
             @Override
             public void deliveryStatus(PushBody pushBody) {
-
+                System.out.println("下行更新状态接口");
             }
         });
         expressClient.setLogListener((cmd, method, isSuccess, request, response) -> {
             System.out.println("cmd:"+cmd);
             System.out.println("method:"+method);
             System.out.println("isSuccess:"+isSuccess);
-            System.out.println("request:"+ JSON.toJSONString(request));
-            System.out.println("response:"+JSON.toJSONString(response));
+            System.out.println("request:"+ request);
+            System.out.println("response:"+ response);
         });
         expressClient.setAccessTokenListener(new AccessTokenListener() {
             @Override
             public String getAccessToken() {
-                try {
-                    return expressClient.getAccessTokenService().getAccessToken().getAccess_token();
-                } catch (Exception e){
-                    e.printStackTrace();
-                    return "";
-                }
+               return "b669f14a-e818-4f36-a606-3677920a8caa";
             }
         });
     }

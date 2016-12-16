@@ -9,8 +9,8 @@ public class TransportInfo implements Serializable {
 
     private String transport_name; //	string	64	否	门店名称
     private String transport_address; //	string	255	是	取货点地址
-    private Float transport_longitude; //	decimal	-	是	取货点经度
-    private Float transport_latitude; //	decimal	-	是	取货点纬度
+    private Double transport_longitude; //	decimal	-	是	取货点经度
+    private Double transport_latitude; //	decimal	-	是	取货点纬度
     private Integer position_source; //	int	-	是	取货点经纬度来源, 1:腾讯地图, 2:百度地图, 3:高德地图
     private String transport_tel; //	string	16	是	取货点联系方式, 只支持手机号,400开头电话以及座机号码
     private String transport_remark; //	string	255	否	取货点备注
@@ -31,19 +31,19 @@ public class TransportInfo implements Serializable {
         this.transport_address = transport_address;
     }
 
-    public Float getTransport_longitude() {
+    public Double getTransport_longitude() {
         return transport_longitude;
     }
 
-    public void setTransport_longitude(Float transport_longitude) {
+    public void setTransport_longitude(Double transport_longitude) {
         this.transport_longitude = transport_longitude;
     }
 
-    public Float getTransport_latitude() {
+    public Double getTransport_latitude() {
         return transport_latitude;
     }
 
-    public void setTransport_latitude(Float transport_latitude) {
+    public void setTransport_latitude(Double transport_latitude) {
         this.transport_latitude = transport_latitude;
     }
 
