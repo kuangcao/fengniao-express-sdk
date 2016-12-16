@@ -1,7 +1,12 @@
 package com.jiabangou.fnexpresssdk.api.impl;
 
+import com.alibaba.fastjson.JSONObject;
+import com.alibaba.fastjson.util.TypeUtils;
 import com.jiabangou.fnexpresssdk.api.*;
+import com.jiabangou.fnexpresssdk.model.PushBody;
+import com.jiabangou.fnexpresssdk.model.RequestBody;
 import com.jiabangou.fnexpresssdk.model.ResultMessage;
+import com.jiabangou.fnexpresssdk.utils.FnExpressUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.http.HttpHost;
 import org.apache.http.auth.AuthScope;
@@ -11,8 +16,6 @@ import org.apache.http.impl.client.BasicCredentialsProvider;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClientBuilder;
 import org.apache.http.impl.client.HttpClients;
-
-import java.util.Map;
 
 /**
  * Created by wanglei on 16-9-30.
@@ -87,11 +90,27 @@ public class FnExpressClientImpl implements FnExpressClient {
     }
 
     @Override
-    public ResultMessage pushHandle(String url, Map<String, String> params, String pushAction) {
-        if (this.pushConsumer == null) {
-            return ResultMessage.buildError("pushConsumer does not implement");
+    public ResultMessage pushHandle(String jsonString) {
+
+        try {
+
+            if (this.pushConsumer == null) {
+                throw new RuntimeException("pushConsumer does not implement");
+            }
+
+            RequestBody requestBody = FnExpressUtils.parseRequestBody(jsonString, configStorage.getAppId(), accessTokenListener.getAccessToken());
+
+            PushBody pushBody = TypeUtils.castToJavaBean(requestBody.getData(), PushBody.class);
+
+            this.pushConsumer.deliveryStatus(pushBody);
+
+            logging("/push_order_status", "POST", true, jsonString, JSONObject.toJSONString(ResultMessage.buildOk()));
+            return ResultMessage.buildOk();
+
+        } catch (Exception e) {
+            logging("/push_order_status", "POST", false, jsonString, e.getMessage());
+            return ResultMessage.buildError(e.getMessage());
         }
-        return ResultMessage.buildOk();
     }
 
     private void logging(String cmd, String method, boolean isSuccess, String request, String response) {

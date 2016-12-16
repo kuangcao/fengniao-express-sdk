@@ -65,21 +65,35 @@ public class FnExpressUtils {
         return params;
     }
 
-    public static void sigCheck(String url, Map<String, String> params, String appId, String secret) {
-//        if (!signParams.containsKey("app_id")) {
-//            throw new RuntimeException("app_id is required");
-//        }
-//        if (!appId.equals(signParams.get("app_id"))) {
-//            throw new RuntimeException("app_id is incorrect");
-//        }
-//
-//        List<String> sortParams = getSortParams(signParams);
-//
-//        String signature = DigestUtils.md5Hex(sigPart.getUrl() + "?" + StringUtils.join(sortParams, "&") + secret);
-//
-//        if (!signature.equals(sigPart.getSig())) {
-//            throw new RuntimeException("sig is incorrect");
-//        }
+    public static RequestBody parseRequestBody(String jsonString, String appId, String accessToken) {
+
+        RequestBody requestBody = JSON.parseObject(jsonString, RequestBody.class);
+
+        if (requestBody == null) {
+            throw new RuntimeException("requestBody is null");
+        }
+        if (requestBody.getAppId() == null || requestBody.getAppId().equals("")) {
+            throw new RuntimeException("app_id is required");
+        }
+        if (!appId.equals(requestBody.getAppId())) {
+            throw new RuntimeException("app_id is incorrect");
+        }
+        if (requestBody.getSalt() == null) {
+            throw new RuntimeException("salt is required");
+        }
+        if (requestBody.getSignature() == null || requestBody.getSignature().equals("")) {
+            throw new RuntimeException("app_id is required");
+        }
+
+        if (!checkSignature(requestBody, accessToken)) {
+            throw new RuntimeException("sig is incorrect");
+        }
+
+        return requestBody;
+    }
+
+    public static boolean checkSignature(RequestBody requestBody, String accessToken) {
+        return createApiSignature(requestBody.getAppId(), accessToken, requestBody.getData(), requestBody.getSalt()).equals(requestBody.getSignature());
     }
 
 

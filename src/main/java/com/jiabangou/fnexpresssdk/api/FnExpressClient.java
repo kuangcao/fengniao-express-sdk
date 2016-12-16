@@ -2,8 +2,6 @@ package com.jiabangou.fnexpresssdk.api;
 
 import com.jiabangou.fnexpresssdk.model.ResultMessage;
 
-import java.util.Map;
-
 public interface FnExpressClient {
 
     void setConfigStorage(FnExpressConfigStorage mtWmConfigStorage);
@@ -21,8 +19,7 @@ public interface FnExpressClient {
      *
      * @return
      */
-    ResultMessage pushHandle(String url, Map<String, String> params, String pushAction);
-
+    ResultMessage pushHandle(String jsonString);
 
     /**
      * 获取订单服务
