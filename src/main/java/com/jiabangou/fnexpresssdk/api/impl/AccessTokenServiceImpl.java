@@ -31,7 +31,7 @@ public class AccessTokenServiceImpl extends BaseServiceImpl implements AccessTok
         params.put("salt", String.valueOf(FnExpressUtils.getSalt()));
         params.put("signature", FnExpressUtils.createAccessTokenSignature(configStorage.getAppId(), configStorage.getSecret(),
                 Integer.valueOf(params.get("salt"))));
-        return get(doPost(GET_ACCESS_TOKEN, params), DATA, AccessToken.class);
+        return get(doGet(GET_ACCESS_TOKEN, params), DATA, AccessToken.class);
     }
 
 }

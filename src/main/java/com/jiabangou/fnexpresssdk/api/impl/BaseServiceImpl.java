@@ -28,8 +28,8 @@ import java.util.Map;
 
 public class BaseServiceImpl {
 
-    public static final String API_URL = "http://waimaiopen.meituan.com/api/v1";
-    public static final String TEST_API_URL = "http://test.waimaiopen.meituan.com/api/v1";
+    public static final String API_URL = "https://open-anubis.ele.me/anubis-webapi";
+    public static final String TEST_API_URL = "https://exam-anubis.ele.me/anubis-webapi";
     public static final String UTF_8 = "UTF-8";
     public static final String DATA = "data";
     public static final String HTTP_METHOD_GET = "GET";

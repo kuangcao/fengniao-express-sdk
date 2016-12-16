@@ -18,7 +18,7 @@ public class FnExpressErrorException extends Exception {
 
     @Override
     public String toString() {
-        return "MtWmErrorException{" +
+        return "FnExpressErrorException{" +
                 "code=" + code +
                 ", message=" + getMessage() +
                 "} " + super.toString();
