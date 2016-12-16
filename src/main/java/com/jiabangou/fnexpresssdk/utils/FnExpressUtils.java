@@ -16,8 +16,8 @@ public class FnExpressUtils {
 
     public static RequestBody buildRequestBody(String appId, String accessToken, Object data){
         RequestBody requestBody = new RequestBody();
-        requestBody.setAppId(appId);
-        requestBody.setData(data);
+        requestBody.setApp_id(appId);
+        requestBody.setData(urlEncode(JSON.toJSONString(data)));
         requestBody.setSalt(getSalt());
         requestBody.setSignature(createApiSignature(appId, accessToken, data, requestBody.getSalt()));
         return requestBody;
@@ -72,10 +72,10 @@ public class FnExpressUtils {
         if (requestBody == null) {
             throw new RuntimeException("requestBody is null");
         }
-        if (requestBody.getAppId() == null || requestBody.getAppId().equals("")) {
+        if (requestBody.getApp_id() == null || requestBody.getApp_id().equals("")) {
             throw new RuntimeException("app_id is required");
         }
-        if (!appId.equals(requestBody.getAppId())) {
+        if (!appId.equals(requestBody.getApp_id())) {
             throw new RuntimeException("app_id is incorrect");
         }
         if (requestBody.getSalt() == null) {
@@ -93,7 +93,7 @@ public class FnExpressUtils {
     }
 
     public static boolean checkSignature(RequestBody requestBody, String accessToken) {
-        return createApiSignature(requestBody.getAppId(), accessToken, requestBody.getData(), requestBody.getSalt()).equals(requestBody.getSignature());
+        return createApiSignature(requestBody.getApp_id(), accessToken, requestBody.getData(), requestBody.getSalt()).equals(requestBody.getSignature());
     }
 
 

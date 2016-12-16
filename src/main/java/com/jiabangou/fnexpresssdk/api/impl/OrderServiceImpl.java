@@ -46,10 +46,10 @@ public class OrderServiceImpl extends BaseServiceImpl implements OrderService {
     }
 
     @Override
-    public void syncCancelOrder(String tpOrderId, Integer reasonCode, String description) throws FnExpressErrorException {
+    public void syncCancelOrder(String tpOrderId, String description) throws FnExpressErrorException {
         Map<String, String> params = new HashMap<>(4);
         params.put("partner_order_code", tpOrderId);
-        params.put("order_cancel_reason_code", String.valueOf(reasonCode));
+        params.put("order_cancel_reason_code", "2");
         params.put("order_cancel_description", description);
         params.put("order_cancel_time", String.valueOf(System.currentTimeMillis()));
         doPost(ORDER_CANCEL, params);

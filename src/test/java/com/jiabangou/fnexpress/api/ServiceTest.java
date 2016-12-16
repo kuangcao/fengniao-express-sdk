@@ -22,7 +22,7 @@ public class ServiceTest {
         configStorage.setSecret("8e7398ae-6025-4cf9-bd3c-5a03942cecc6");
         expressClient = new FnExpressClientImpl();
         expressClient.setConfigStorage(configStorage);
-        expressClient.setIsTest(false);
+        expressClient.setIsTest(true);
         expressClient.setPushConsumer(new PushConsumer() {
             @Override
             public void deliveryStatus(PushBody pushBody) {
@@ -39,7 +39,7 @@ public class ServiceTest {
         expressClient.setAccessTokenListener(new AccessTokenListener() {
             @Override
             public String getAccessToken() {
-               return "b669f14a-e818-4f36-a606-3677920a8caa";
+               return "a94f0788-d058-4722-9487-ec1266bf639f";
             }
         });
     }

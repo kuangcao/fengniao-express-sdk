@@ -26,7 +26,7 @@ public class OrderServiceImplTest extends ServiceTest {
     private Order buildOrder() {
         Order order = new Order();
         order.setPartner_remark("测试商户1");
-        order.setPartner_order_code("test_order_1");
+        order.setPartner_order_code("1002");
         order.setNotify_url("http://mp.test.xiaoyage.com");
         order.setOrder_type(1);
         order.setTransport_info(buildTransportInfo());
@@ -42,7 +42,7 @@ public class OrderServiceImplTest extends ServiceTest {
         order.setIs_agent_payment(1);
         order.setRequire_payment_pay(100.0);
         order.setGoods_count(5);
-        order.setRequire_receive_time(System.currentTimeMillis());
+        order.setRequire_receive_time(1481960998000L);
         order.setReceiver_info(buildReceiverInfo());
         order.setItems_json(buildItems());
         order.setSerial_number("1");
@@ -89,4 +89,18 @@ public class OrderServiceImplTest extends ServiceTest {
         items.add(item);
         return items;
     }
+
+    @Test
+    public void getOrderDetail() throws FnExpressErrorException {
+        OrderService orderService = expressClient.getOrderService();
+        System.out.println(orderService.getOrderDetail("1002").getOrder_status());
+    }
+
+    @Test
+    public void syncCancelOrder() throws FnExpressErrorException {
+        OrderService orderService = expressClient.getOrderService();
+        orderService.syncCancelOrder("1002", "取消订单");
+    }
+
+
 }

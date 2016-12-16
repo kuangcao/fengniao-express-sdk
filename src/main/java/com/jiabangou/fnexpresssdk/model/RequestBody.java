@@ -7,17 +7,17 @@ import java.io.Serializable;
  */
 public class RequestBody implements Serializable {
 
-    private String appId;
+    private String app_id;
     private Integer salt;
     private String signature;
     private Object data;
 
-    public String getAppId() {
-        return appId;
+    public String getApp_id() {
+        return app_id;
     }
 
-    public void setAppId(String appId) {
-        this.appId = appId;
+    public void setApp_id(String app_id) {
+        this.app_id = app_id;
     }
 
     public Integer getSalt() {
@@ -47,7 +47,7 @@ public class RequestBody implements Serializable {
     @Override
     public String toString() {
         return "RequestBody{" +
-                "appId='" + appId + '\'' +
+                "app_id='" + app_id + '\'' +
                 ", salt=" + salt +
                 ", signature='" + signature + '\'' +
                 ", data=" + data +
