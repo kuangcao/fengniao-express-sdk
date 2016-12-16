@@ -37,7 +37,8 @@ public enum  PushErrorCode {
     CARRIER_CANCEL("CARRIER_CANCEL", "配送商发起取消"),  //建议商户改派其他配送商
     DELIVERY_TIMEOUT("DELIVERY_TIMEOUT", "配送超时"),  //系统标记异常	建议商户改派其他配送商
     REJECT_ORDER("REJECT_ORDER", "拒单"),  //目前只有是状态1（待调度）才可以取消
-    FOR_UPDATE_TIP("FOR_UPDATE_TIP", "加小费取消");  //目前只有是状态1（待调度）才可以取消
+    FOR_UPDATE_TIP("FOR_UPDATE_TIP", "加小费取消"),  //目前只有是状态1（待调度）才可以取消
+    ;
 
     private String code;
     private String name;
