@@ -125,7 +125,7 @@ public class BaseServiceImpl {
         FnExpressError error = FnExpressError.fromJson(jsonObject);
         if (error != null) {
             logging(url, httpMethod, false, httpUriRequest.getURI() + "\nBody:" + JSON.toJSONString(params), resultContent);
-            throw new FnExpressErrorException(error.getErrorCode(), error.getErrorMsg());
+            throw new FnExpressErrorException(error.getErrorCode(), error.getErrorMsg(), JSON.toJSONString(params), resultContent);
         }
         logging(url, httpMethod, true, httpUriRequest.getURI() + "\nBody:" + JSON.toJSONString(params), resultContent);
         return jsonObject;
