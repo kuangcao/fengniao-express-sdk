@@ -26,11 +26,10 @@ public enum ErrorCode {
     MINI_STORE_AND_DELIVERY_NOT_MATCH(500090,  "用户绑定的微仓和运力覆盖范围不匹配"),
     CANCEL_ORDER_FAILED(50101,  "商户取消订单失败"),
     NOT_ALLOW_CANCEL_ORDER(50102,  "当前订单状态不允许取消"),
-    ORDER_ARRIVED_TIME_TOO_LATE(50104,  "预计送达时间过长，请修改后重新推送"),
     NOT_BUY_SERVICE_OR_SERVICE_OFFLINE(50110,  "未购买服务或服务已下线"),
     ORDER_DELIVERY_DISTANCE_TOO_LONG(500060,  "订单配送距离太远了超过阈值"),
     ORDER_OVERWEIGHT(500100,  "订单超重"),
-//    ORDER_ARRIVED_TIME_TOO_LATE(50019,  "预计送达时间过长"),
+    ORDER_ARRIVED_TIME_TOO_LATE(50015,  "预计送达时间过长"),
     ;
 
     private int code;
