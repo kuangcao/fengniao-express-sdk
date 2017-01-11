@@ -16,6 +16,6 @@ public interface OrderService {
 
     OrderDetail getOrderDetail(String tpOrderId) throws FnExpressErrorException;
 
-    void syncCancelOrder(String tpOrderId, String description) throws FnExpressErrorException;
+    void syncCancelOrder(String tpOrderId, int cancelCode, String description) throws FnExpressErrorException;
 
 }
